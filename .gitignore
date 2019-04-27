@@ -1,0 +1,8 @@
+**/bin/*
+**/build/*
+
+**/.terraform/*
+**/*.tfstate.*
+**/*.tfstate
+
+**/.vscode
