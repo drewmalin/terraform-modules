@@ -2,10 +2,18 @@ provider "aws" {
     region = "us-west-2"
 }
 
-data "aws_region" "current" {}
-
 locals {
     namespace = "dmtest"
+}
+
+data "aws_region" "current" {}
+
+data "aws_ssm_parameter" "db_user" {
+    name = "/${local.namespace}/db_user"
+}
+
+data "aws_ssm_parameter" "db_pass" {
+    name = "/${local.namespace}/db_pass"
 }
 
 module "vpc" {

@@ -199,19 +199,19 @@ resource "aws_network_acl" "app" {
     egress {
         rule_no    = 100
         action     = "allow"
-        cidr_block = "0.0.0.0/0"
+        protocol   = "-1"
         from_port  = 0
         to_port    = 0
-        protocol   = "-1"
+        cidr_block = "0.0.0.0/0"
     }
 
     ingress {
         rule_no    = 100
         action     = "allow"
-        cidr_block = "${element(aws_subnet.web.*.cidr_block, count.index)}"
+        protocol   = "-1"
         from_port  = 0
         to_port    = 0
-        protocol   = "-1"
+        cidr_block = "${element(aws_subnet.web.*.cidr_block, count.index)}"
     }
 
     tags {
@@ -240,22 +240,85 @@ resource "aws_network_acl" "data" {
     egress {
         rule_no    = 100
         action     = "allow"
-        cidr_block = "0.0.0.0/0"
+        protocol   = "-1"
         from_port  = 0
         to_port    = 0
-        protocol   = "-1"
+        cidr_block = "0.0.0.0/0"
     }
 
     ingress {
         rule_no    = 100
         action     = "allow"
-        cidr_block = "${element(aws_subnet.app.*.cidr_block, count.index)}"
+        protocol   = "-1"
         from_port  = 0
         to_port    = 0
-        protocol   = "-1"
+        cidr_block = "${element(aws_subnet.app.*.cidr_block, count.index)}"
     }
 
     tags {
         Name = "data-${var.namespace}"
     }
 }
+
+/**
+ * VPC security groups. Allows for per-instance restriction of network traffic. May be optionally
+ * used by instances created in the VPC.
+ */
+ resource "aws_security_group" "web" {
+    vpc_id = "${aws_vpc.main.id}"
+
+    ingress {
+        protocol    = "tcp"
+        from_port   = 80
+        to_port     = 80
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        protocol    = "-1"
+        from_port   = 0
+        to_port     = 0
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags {
+        Name = "web-${var.namespace}"
+    }
+ }
+
+  resource "aws_security_group" "app" {
+    vpc_id = "${aws_vpc.main.id}"
+
+    ingress {
+        protocol        = "tcp"
+        from_port       = 8080
+        to_port         = 8080
+        security_groups = ["${aws_security_group.web.id}"]
+    }
+
+    egress {
+        protocol    = "-1"
+        from_port   = 0
+        to_port     = 0
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags {
+        Name = "app-${var.namespace}"
+    }
+ }
+
+   resource "aws_security_group" "data" {
+    vpc_id = "${aws_vpc.main.id}"
+
+    ingress {
+        protocol        = "tcp"
+        from_port       = 3306
+        to_port         = 3306
+        security_groups = ["${aws_security_group.app.id}"]
+    }
+
+    tags {
+        Name = "data-${var.namespace}"
+    }
+ }
