@@ -1,12 +1,12 @@
 # Test App
 
-0. First Time Setup
+## 0. First Time Setup
 Initiatlize terraform:
 ```
 > terraform init terraform/
 ```
 
-1. Deploy App Locally
+## 1. Deploy App Locally
 
 Build docker image:
 ```
@@ -23,7 +23,7 @@ Invoke request:
 > curl localhost:8080
 ```
 
-2. Deploy App to AWS
+## 2. Deploy App to AWS
 
 Create SSM parameters. These should pre-exist the AWS stack itself, and should be named in such a way as to include your personal 'namespace' value. Replace <namespace> with that value:
 
