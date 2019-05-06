@@ -28,6 +28,8 @@ resource "aws_alb_target_group" "main" {
         path              = "${var.healthcheck_path}"
     }
 
+    depends_on = ["aws_alb.main"]
+
     tags {
         Name = "lbtg-${var.namespace}"
     }

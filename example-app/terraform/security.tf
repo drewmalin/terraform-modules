@@ -19,7 +19,7 @@
     }
 
     tags {
-        Name = "load_balancer-${local.namespace}"
+        Name = "load_balancer-${var.namespace}"
     }
  }
 
@@ -32,8 +32,8 @@
 
     ingress {
         protocol        = "tcp"
-        from_port       = "${local.task_port}"
-        to_port         = "${local.task_port}"
+        from_port       = "${var.service_port}"
+        to_port         = "${var.service_port}"
         security_groups = ["${aws_security_group.load_balancer.id}"]
     }
 
@@ -45,7 +45,7 @@
     }
 
     tags {
-        Name = "container-${local.namespace}"
+        Name = "container-${var.namespace}"
     }
  }
 
@@ -64,6 +64,6 @@ resource "aws_security_group" "database" {
     }
 
     tags {
-        Name = "database-${local.namespace}"
+        Name = "database-${var.namespace}"
     }
  }

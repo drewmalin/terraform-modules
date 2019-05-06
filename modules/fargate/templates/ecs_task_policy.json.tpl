@@ -9,16 +9,17 @@
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:logs:${account_id}:${region}:*"
+                "arn:aws:logs:${region}:${account_id}:*"
             ]
         },
         {
             "Effect": "Allow",
             "Action": [
-                "ssm:GetParameter"
+                "ssm:GetParameter",
+                "ssm:GetParameters"
             ],
             "Resource": [
-                "arn:aws:ssm:${account_id}:${region}:*"
+                "arn:aws:ssm:${region}:${account_id}:*"
             ]
         }
     ]

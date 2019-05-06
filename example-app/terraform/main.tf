@@ -3,14 +3,14 @@ provider "aws" {
     region  = "us-west-2"
 }
 
-locals {
-    namespace = "dmtest"
+variable "namespace" {}
+variable "service_port" {}
 
+locals {
     vpc_cidr_block         = "192.168.0.0/21"
     vpc_availability_zones = ["us-west-2a", "us-west-2b"]
 
     load_balancer_port = 80
-    task_port          = 8080
 
     task_instance_count   = 1
     task_healthcheck_path = "/"
@@ -26,17 +26,17 @@ locals {
 data "aws_region" "current" {}
 
 data "aws_ssm_parameter" "db_user" {
-    name = "/${local.namespace}/db_user"
+    name = "/${var.namespace}/db_user"
 }
 
 data "aws_ssm_parameter" "db_pass" {
-    name = "/${local.namespace}/db_pass"
+    name = "/${var.namespace}/db_pass"
 }
 
 module "vpc" {
     source = "../../modules/vpc"
 
-    namespace          = "${local.namespace}"
+    namespace          = "${var.namespace}"
     region             = "${data.aws_region.current.name}"
     vpc_cidr           = "${local.vpc_cidr_block}"
     availability_zones = "${local.vpc_availability_zones}"
@@ -45,12 +45,12 @@ module "vpc" {
 module "alb" {
     source = "../../modules/alb"
 
-    namespace = "${local.namespace}"
+    namespace = "${var.namespace}"
     vpc_id     = "${module.vpc.vpc_id}"
 
     ingress_port     = "${local.load_balancer_port}"
-    target_port      = "${local.task_port}"
-    healthcheck_port = "${local.task_port}"
+    target_port      = "${var.service_port}"
+    healthcheck_port = "${var.service_port}"
     healthcheck_path = "${local.task_healthcheck_path}"
 
     subnet_ids         = "${module.vpc.web_subnet_ids}"
@@ -60,7 +60,7 @@ module "alb" {
 module "fargate" {
     source = "../../modules/fargate"
 
-    namespace = "${local.namespace}"
+    namespace = "${var.namespace}"
     region    = "${data.aws_region.current.name}"
 
     task_cpu                  = "${local.task_cpu}"
@@ -76,7 +76,7 @@ module "fargate" {
     env_db_password_ssm_param = "${data.aws_ssm_parameter.db_pass.name}"
 
     alb_target_group_arn = "${module.alb.target_group_arn}"
-    container_port       = "${local.task_port}"
+    container_port       = "${var.service_port}"
 
     subnet_ids         = "${module.vpc.app_subnet_ids}"
     security_group_ids = ["${aws_security_group.container.id}"]
@@ -85,8 +85,8 @@ module "fargate" {
 module "aurora" {
     source = "../../modules/aurora"
 
-    namespace = "${local.namespace}"
-    db_name   = "${local.namespace}"
+    namespace = "${var.namespace}"
+    db_name   = "${replace(var.namespace, "-", "")}"
     db_user   = "${data.aws_ssm_parameter.db_user.value}"
     db_pass   = "${data.aws_ssm_parameter.db_pass.value}"
 

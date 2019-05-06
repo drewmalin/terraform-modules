@@ -44,7 +44,7 @@ variable "healthcheck_threshold" {
 
 variable "healthcheck_interval" {
     description = "The number of seconds to wait before each health check."
-    default     = 3
+    default     = 5
 }
 
 variable "healthcheck_status_code" {

@@ -107,32 +107,32 @@ resource "aws_route_table_association" "web" {
     route_table_id = "${aws_route_table.web.id}"
 }
 
-resource "aws_network_acl" "web" {
-    vpc_id     = "${aws_vpc.main.id}"
-    subnet_ids = ["${aws_subnet.web.*.id}"]
+# resource "aws_network_acl" "web" {
+#     vpc_id     = "${aws_vpc.main.id}"
+#     subnet_ids = ["${aws_subnet.web.*.id}"]
 
-    egress {
-        rule_no    = 100
-        action     = "allow"
-        cidr_block = "0.0.0.0/0"
-        from_port  = 0
-        to_port    = 0
-        protocol   = "-1"
-    }
+#     egress {
+#         rule_no    = 100
+#         action     = "allow"
+#         cidr_block = "0.0.0.0/0"
+#         from_port  = 0
+#         to_port    = 0
+#         protocol   = "-1"
+#     }
 
-    ingress {
-        rule_no    = 100
-        action     = "allow"
-        cidr_block = "0.0.0.0/0"
-        from_port  = 0
-        to_port    = 0
-        protocol   = "-1"
-    }
+#     ingress {
+#         rule_no    = 100
+#         action     = "allow"
+#         cidr_block = "0.0.0.0/0"
+#         from_port  = 0
+#         to_port    = 0
+#         protocol   = "-1"
+#     }
 
-    tags {
-        Name = "web-${var.namespace}"
-    }
-}
+#     tags {
+#         Name = "web-${var.namespace}"
+#     }
+# }
 
 
 /**
@@ -173,7 +173,7 @@ resource "aws_route_table" "app" {
     vpc_id = "${aws_vpc.main.id}"
 
     tags {
-        Name = "app-${var.namespace}"
+        Name = "app-${element(var.availability_zones, count.index)}-${var.namespace}"
     }
 }
 
@@ -192,32 +192,32 @@ resource "aws_route_table_association" "app" {
     route_table_id = "${element(aws_route_table.app.*.id, count.index)}"
 }
 
-resource "aws_network_acl" "app" {
-    vpc_id     = "${aws_vpc.main.id}"
-    subnet_ids = ["${aws_subnet.app.*.id}"]
+# resource "aws_network_acl" "app" {
+#     vpc_id     = "${aws_vpc.main.id}"
+#     subnet_ids = ["${aws_subnet.app.*.id}"]
 
-    egress {
-        rule_no    = 100
-        action     = "allow"
-        protocol   = "-1"
-        from_port  = 0
-        to_port    = 0
-        cidr_block = "0.0.0.0/0"
-    }
+#     egress {
+#         rule_no    = 100
+#         action     = "allow"
+#         protocol   = "-1"
+#         from_port  = 0
+#         to_port    = 0
+#         cidr_block = "0.0.0.0/0"
+#     }
 
-    ingress {
-        rule_no    = 100
-        action     = "allow"
-        protocol   = "-1"
-        from_port  = 0
-        to_port    = 0
-        cidr_block = "${element(aws_subnet.web.*.cidr_block, count.index)}"
-    }
+#     ingress {
+#         rule_no    = 100
+#         action     = "allow"
+#         protocol   = "-1"
+#         from_port  = 0
+#         to_port    = 0
+#         cidr_block = "${element(aws_subnet.web.*.cidr_block, count.index)}"
+#     }
 
-    tags {
-        Name = "app-${var.namespace}"
-    }
-}
+#     tags {
+#         Name = "app-${var.namespace}"
+#     }
+# }
 
 /**
  * Data-layer routing components. Data subnets are private and must only allow access to the
@@ -233,29 +233,29 @@ resource "aws_route_table_association" "data" {
     route_table_id = "${element(aws_route_table.app.*.id, count.index)}"
 }
 
-resource "aws_network_acl" "data" {
-    vpc_id     = "${aws_vpc.main.id}"
-    subnet_ids = ["${aws_subnet.data.*.id}"]
+# resource "aws_network_acl" "data" {
+#     vpc_id     = "${aws_vpc.main.id}"
+#     subnet_ids = ["${aws_subnet.data.*.id}"]
 
-    egress {
-        rule_no    = 100
-        action     = "allow"
-        protocol   = "-1"
-        from_port  = 0
-        to_port    = 0
-        cidr_block = "0.0.0.0/0"
-    }
+#     egress {
+#         rule_no    = 100
+#         action     = "allow"
+#         protocol   = "-1"
+#         from_port  = 0
+#         to_port    = 0
+#         cidr_block = "0.0.0.0/0"
+#     }
 
-    ingress {
-        rule_no    = 100
-        action     = "allow"
-        protocol   = "-1"
-        from_port  = 0
-        to_port    = 0
-        cidr_block = "${element(aws_subnet.app.*.cidr_block, count.index)}"
-    }
+#     ingress {
+#         rule_no    = 100
+#         action     = "allow"
+#         protocol   = "-1"
+#         from_port  = 0
+#         to_port    = 0
+#         cidr_block = "${element(aws_subnet.app.*.cidr_block, count.index)}"
+#     }
 
-    tags {
-        Name = "data-${var.namespace}"
-    }
-}
+#     tags {
+#         Name = "data-${var.namespace}"
+#     }
+# }

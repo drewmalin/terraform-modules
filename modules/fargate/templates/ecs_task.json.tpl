@@ -5,13 +5,13 @@
         "networkMode": "${network_mode}",
         "portMappings": [
             {
-                "containerPort": "${port}",
-                "hostPort": "${port}"
+                "containerPort": ${port},
+                "hostPort": ${port}
             }
         ],
-        "cpu": "${cpu}",
-        "memoryReservation": "${memory}",
-        "memory": "${memory_max}",
+        "cpu": ${cpu},
+        "memoryReservation": ${memory_min},
+        "memory": ${memory_max},
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {

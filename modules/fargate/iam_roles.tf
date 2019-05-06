@@ -5,7 +5,7 @@ data "template_file" "ecs_assume_policy_template" {
 }
 
 resource "aws_iam_role" "service" {
-    name               = "${var.namespace}-ecs-service"
+    name               = "${var.namespace}-ecsTaskExecutionRole"
     assume_role_policy = "${data.template_file.ecs_assume_policy_template.rendered}"
 }
 
@@ -24,12 +24,12 @@ data "template_file" "ecs_task_policy_template" {
 }
 
 resource "aws_iam_role" "task" {
-    name               = "${var.namespace}-ecs-task"
+    name = "${var.namespace}-ecs-task"
     assume_role_policy = "${data.template_file.ecs_assume_policy_template.rendered}"
 }
 
 resource "aws_iam_role_policy" "task" {
-    name = "${var.namespace}-ecs-task"
+    name = "${var.namespace}-ecsTask"
     role = "${aws_iam_role.task.id}"
     policy = "${data.template_file.ecs_task_policy_template.rendered}"
 }
