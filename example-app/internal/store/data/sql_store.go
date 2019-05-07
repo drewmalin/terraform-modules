@@ -1,4 +1,4 @@
-package datastore
+package data
 
 import (
 	"fmt"
@@ -24,8 +24,8 @@ func NewSQLStore(username, password, endpoint, databaseName string) (*SQLStore, 
 	return &SQLStore{db}, nil
 }
 
-func (s *SQLStore) Query(query string) ([]QueryResult, error) {
-	result := []QueryResult{}
-	err := s.db.Select(&result, query)
+func (s *SQLStore) Get() ([]Data, error) {
+	result := []Data{}
+	err := s.db.Select(&result, "SELECT 1 as result;")
 	return result, err
 }

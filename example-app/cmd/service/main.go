@@ -10,8 +10,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"example-app/internal/datastore"
-	"example-app/internal/parameterstore"
+	dataRouter "example-app/internal/router/data"
+	dataService "example-app/internal/service/data"
+	dataStore "example-app/internal/store/data"
+
+	healthRouter "example-app/internal/router/health"
+	"example-app/internal/store/parameter"
 )
 
 const (
@@ -25,41 +29,22 @@ const (
 )
 
 func main() {
-	fmt.Println(os.Environ())
 	dataStore, err := getDataStore()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	dataService, err := getDataService(dataStore)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	router := gin.Default()
-	router.GET("/query", func(c *gin.Context) {
-		result, err := dataStore.Query("SELECT 1 as result;")
-		if err != nil {
-			failure(500, err.Error(), c)
-		} else {
-			success(200, string(result[0].Result), c)
-		}
-	})
-	router.GET("/", func(c *gin.Context) {
-		success(200, "success", c)
-	})
-
+	healthRouter.Handle(router)
+	dataRouter.Handle(dataService, router)
 	router.Run(":8080")
 }
 
-func success(status int, message string, c *gin.Context) {
-	c.JSON(status, gin.H{
-		"message": message,
-	})
-}
-
-func failure(status int, message string, c *gin.Context) {
-	c.JSON(status, gin.H{
-		"error": message,
-	})
-}
-
-func getDataStore() (datastore.Store, error) {
+func getDataStore() (dataStore.Store, error) {
 	endpoint := os.Getenv(ENV_DB_ENDPOINT)
 	databaseName := os.Getenv(ENV_DB_NAME)
 
@@ -75,12 +60,18 @@ func getDataStore() (datastore.Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return datastore.NewSQLStore(username, password, endpoint, databaseName)
+	return dataStore.NewSQLStore(username, password, endpoint, databaseName)
+}
+
+func getDataService(store dataStore.Store) (dataService.Service, error) {
+	return dataService.StandardService{
+		DataStore: store,
+	}, nil
 }
 
 func getCredentialsFromSSM() (string, string, error) {
 	awsSession := session.Must(session.NewSession(aws.NewConfig()))
-	parmStore := &parameterstore.SSMStore{
+	parmStore := &parameter.SSMStore{
 		Client: ssm.New(awsSession),
 	}
 	username, err := parmStore.GetParameterValue(os.Getenv(ENV_DB_USERNAME_PARAM))

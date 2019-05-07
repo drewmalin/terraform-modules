@@ -1,4 +1,4 @@
-package parameterstore
+package parameter
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
