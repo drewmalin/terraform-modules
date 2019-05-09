@@ -1,14 +1,14 @@
 APP=example-app
 
 AWS_ACCOUNT=$(shell aws sts get-caller-identity --output text --query 'Account')
-AWS_REGION?=us-west-2
 NAMESPACE=$(subst .,/-,${USER})
 
 PORT=8080
 
-GOCMD=go
-DOCKERCMD=docker
+AWS_REGION?=us-west-2
 AWSCMD=aws --region $(AWS_REGION)
+DOCKERCMD=docker
+GOCMD=go
 TERRAFORMCMD=terraform
 
 GOBUILD=$(GOCMD) build
@@ -28,7 +28,7 @@ compile:
 	env GOOS=linux $(GOBUILD) -o $(BUILD_DIR)/$(APP) -ldflags "-s -d -w" -tags netgo -installsuffix netgo -v ./$(SERVICE_DIR)
 
 buildDocker:
-	$(DOCKERCMD) build -t $(BUILD_TAG) .
+	$(DOCKERCMD) build --build-arg port=$(PORT) --build-arg bin=$(APP) -t $(BUILD_TAG) .
 
 applyTerraform:
 	$(TERRAFORMCMD) init $(TERRAFORM_DIR)
@@ -44,7 +44,7 @@ pushDockerRemote:
 	$(eval awsAccount=$(shell ${AWSCMD} sts get-caller-identity --query 'Account' --output text))
 	$(eval ecrDomain=${awsAccount}.dkr.ecr.${AWS_REGION}.amazonaws.com/${BUILD_TAG})
 
-	$(DOCKERCMD) build -t ${ecrDomain} .
+	$(DOCKERCMD) build --build-arg port=$(PORT) --build-arg bin=$(APP) -t ${ecrDomain} .
 	$(DOCKERCMD) push ${ecrDomain}:latest
 	$(AWSCMD) ecs update-service --cluster $(APP)-$(NAMESPACE)-cluster --service $(APP)-$(NAMESPACE)-service --force-new-deployment
 

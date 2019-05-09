@@ -41,7 +41,7 @@ func main() {
 	router := gin.Default()
 	healthRouter.Handle(router)
 	dataRouter.Handle(dataService, router)
-	router.Run(":8080")
+	router.Run(":8080") // todo: pass as env var
 }
 
 func getDataStore() (dataStore.Store, error) {
