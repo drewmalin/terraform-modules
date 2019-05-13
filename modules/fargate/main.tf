@@ -31,6 +31,7 @@ data "template_file" "task_template" {
         log_group  = "${aws_cloudwatch_log_group.main.name}"
         log_prefix = "${var.namespace}"
 
+        env_port                  = "${var.container_port}"
         env_db_endpoint           = "${var.env_db_endpoint}"
         env_db_name               = "${var.env_db_name}"
         env_db_username_ssm_param = "${var.env_db_username_ssm_param}"

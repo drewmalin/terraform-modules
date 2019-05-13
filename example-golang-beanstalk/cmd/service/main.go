@@ -27,16 +27,17 @@ const (
 	ENV_DB_ENDPOINT       = "DB_ENDPOINT"
 	ENV_DB_NAME           = "DB_NAME"
 	ENV_PORT              = "PORT"
+	ENV_REGION            = "REGION"
 )
 
 func main() {
 	dataStore, err := getDataStore()
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Error: " + err.Error())
 	}
 	dataService, err := getDataService(dataStore)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Error: " + err.Error())
 	}
 
 	router := gin.Default()
@@ -70,10 +71,11 @@ func getDataService(store dataStore.Store) (dataService.Service, error) {
 	}, nil
 }
 
+// todo: provide region via env var
 func getCredentialsFromSSM() (string, string, error) {
 	awsSession := session.Must(session.NewSession(aws.NewConfig()))
 	parmStore := &parameter.SSMStore{
-		Client: ssm.New(awsSession),
+		Client: ssm.New(awsSession, aws.NewConfig().WithRegion(os.Getenv(ENV_REGION))),
 	}
 	username, err := parmStore.GetParameterValue(os.Getenv(ENV_DB_USERNAME_PARAM))
 	if err != nil {

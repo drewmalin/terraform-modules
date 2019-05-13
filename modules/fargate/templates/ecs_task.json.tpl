@@ -22,6 +22,10 @@
         },
         "environment": [
             {
+                "name": "PORT",
+                "value": "${env_port}"
+            },
+            {
                 "name": "DB_ENDPOINT",
                 "value": "${env_db_endpoint}"
             },

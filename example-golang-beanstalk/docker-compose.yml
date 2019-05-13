@@ -1,0 +1,19 @@
+version: "3"
+services:
+  app:
+    image: "${TAG}"
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - database
+    environment:
+      MODE: LOCAL
+      DB_ENDPOINT: database
+      DB_NAME: db
+      DB_USERNAME_PARAM: root
+      DB_PASSWORD_PARAM: supersecret
+  database:
+    image: "mysql"
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: supersecret
