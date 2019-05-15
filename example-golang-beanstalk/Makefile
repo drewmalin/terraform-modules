@@ -37,16 +37,16 @@ destroyTerraform:
 	$(TERRAFORMCMD) destroy -var="namespace=$(APP)-$(NAMESPACE)" -var="service_port=$(PORT)" $(TERRAFORM_DIR)
 
 foo:
-	cp Dockerrun.aws.json.tpl Dockerrun.aws.json
-	sed -i "s/<ACCOUNT>/foo/" Dockerrun.aws.json
-	sed -i "s/<REGION>/bar/" Dockerrun.aws.json
-	sed -i "s/<APP>/baz/" Dockerrun.aws.json
-	sed -i "s/<VERSION>/qux/" Dockerrun.aws.json
-	sed -i "s/<PORT>/quxx/" Dockerrun.aws.json
-	zip  $(BUILD_TAG)-$(BUILD_VER).zip Dockerrun.aws.json
+	cp -r build_template/ build/
 
-	rm Dockerrun.aws.json
-	rm  $(BUILD_TAG)-$(BUILD_VER).zip
+	sed -i "s/<ACCOUNT>/$(awsAccount)/" build/Dockerrun.aws.json
+	sed -i "s/<REGION>/$(AWS_REGION)/" build/Dockerrun.aws.json
+	sed -i "s/<APP>/$(BUILD_TAG)/" build/Dockerrun.aws.json
+	sed -i "s/<VERSION>/$(BUILD_VER)/" build/Dockerrun.aws.json
+	sed -i "s/<PORT>/$(PORT)/" build/Dockerrun.aws.json
+	sed -i "s/<PORT>/$(PORT)/" build/proxy/conf.d/default.conf
+
+	cd build; zip -r ../$(BUILD_TAG)-$(BUILD_VER).zip *
 
 pushDockerRemote:
 	$(eval dockerLogin=$(shell ${AWSCMD} ecr get-login --no-include-email))
@@ -58,14 +58,16 @@ pushDockerRemote:
 	$(DOCKERCMD) build --build-arg port=$(PORT) --build-arg bin=$(APP) -t ${ecrDomain}/${BUILD_TAG}:${BUILD_VER} .
 	$(DOCKERCMD) push ${ecrDomain}/${BUILD_TAG}:${BUILD_VER}
 	
-	cp Dockerrun.aws.json.tpl Dockerrun.aws.json
-	sed -i "s/<ACCOUNT>/$(awsAccount)/" Dockerrun.aws.json
-	sed -i "s/<REGION>/$(AWS_REGION)/" Dockerrun.aws.json
-	sed -i "s/<APP>/$(BUILD_TAG)/" Dockerrun.aws.json
-	sed -i "s/<VERSION>/$(BUILD_VER)/" Dockerrun.aws.json
-	sed -i "s/<PORT>/$(PORT)/" Dockerrun.aws.json
+	cp -r build_template/ build/
 
-	zip  $(BUILD_TAG)-$(BUILD_VER).zip Dockerrun.aws.json
+	sed -i "s/<ACCOUNT>/$(awsAccount)/" build/Dockerrun.aws.json
+	sed -i "s/<REGION>/$(AWS_REGION)/" build/Dockerrun.aws.json
+	sed -i "s/<APP>/$(BUILD_TAG)/" build/Dockerrun.aws.json
+	sed -i "s/<VERSION>/$(BUILD_VER)/" build/Dockerrun.aws.json
+	sed -i "s/<PORT>/$(PORT)/" build/Dockerrun.aws.json
+	sed -i "s/<PORT>/$(PORT)/" build/proxy/conf.d/default.conf
+
+	cd build ; zip -r ../$(BUILD_TAG)-$(BUILD_VER).zip * ; cd .. ; rm -r build/
 
 	$(AWSCMD) s3 cp $(BUILD_TAG)-$(BUILD_VER).zip s3://$(BUILD_TAG)-versions/$(BUILD_VER).zip
 
@@ -76,8 +78,7 @@ pushDockerRemote:
 	$(AWSCMD) elasticbeanstalk update-environment \
 		--environment-name $(BUILD_TAG)-dev \
 		--version-label $(BUILD_VER)
-	
-	rm Dockerrun.aws.json
+
 	rm $(BUILD_TAG)-$(BUILD_VER).zip
 
 runDockerLocal:

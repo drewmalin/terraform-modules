@@ -1,0 +1,47 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "volumes": [
+        {
+            "name": "nginx-proxy-conf",
+            "host": {
+                "sourcePath": "/var/app/current/proxy/conf.d"
+            }
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "service",
+            "image": "<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/<APP>:<VERSION>",
+            "essential": true,
+            "memoryReservation": 128,
+            "portMappings": [
+                {
+                    "hostPort": <PORT>,
+                    "containerPort": <PORT>
+                }
+            ]
+        },
+        {
+            "name": "nginx-proxy",
+            "image": "nginx",
+            "essential": true,
+            "memoryReservation": 128,
+            "portMappings": [
+                {
+                    "hostPort": 80,
+                    "containerPort": 80
+                }
+            ],
+            "links": [
+                "service"
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "nginx-proxy-conf",
+                    "containerPath": "/etc/nginx/conf.d",
+                    "readOnly": true
+                }
+            ]
+        }
+    ]
+}

@@ -37,8 +37,8 @@ module "beanstalk" {
     source = "../../modules/beanstalk"
 
     namespace      = "${var.namespace}"
-    # solution_stack = "64bit Amazon Linux 2018.03 v2.13.0 running Multi-container Docker 18.06.1-ce (Generic)"
-    solution_stack = "64bit Amazon Linux 2018.03 v2.12.11 running Docker 18.06.1-ce"
+    solution_stack = "64bit Amazon Linux 2018.03 v2.13.0 running Multi-container Docker 18.06.1-ce (Generic)"
+    #solution_stack = "64bit Amazon Linux 2018.03 v2.12.11 running Docker 18.06.1-ce"
 
     vpc_id                 = "${module.vpc.vpc_id}"
     web_subnet_ids         = "${module.vpc.web_subnet_ids}"
